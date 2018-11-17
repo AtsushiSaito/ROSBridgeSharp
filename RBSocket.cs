@@ -54,6 +54,7 @@ namespace ROSBridgeSharp{
             ws.OnOpen += (sender, e) =>
             {
                 Debug.Log("WebSocket Opened.");
+                isConnected = true;
             };
 
             ws.OnMessage += (sender, e) =>
@@ -67,7 +68,6 @@ namespace ROSBridgeSharp{
             };
 
             ws.Connect();
-            isConnected = true;
         }
 
         public void ConnectionClose()
