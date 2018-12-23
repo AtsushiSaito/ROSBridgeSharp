@@ -1,129 +1,134 @@
 ﻿using System.Collections.Generic;
 using UnityEngine;
+using System;
+using System.Threading;
 using WebSocketSharp;
 using ROSBridgeSharp.Messages;
 
-namespace ROSBridgeSharp{
-
-    // サブスクライブ時のハンドラ用デリゲート
-    public delegate void SubscribeHandlerDelegate<T>(T m);
-
-    // 連想配列用の抽象クラスを作成
-    internal abstract class Subscriber{
-        internal abstract void ReciveData(string m);
-    }
-
-    // 抽象クラスからジェネリッククラスを作成 : Tの取りうるクラスはMessage
-    internal class Subscriber<T> : Subscriber where T : Message{
-        // デリゲートからハンドル用関数の実体を作る。
-        internal SubscribeHandlerDelegate<T> RecivedHandler;
-        // トピック名
-        internal string Topic;
-
-        // コンストラクタでトピック名とハンドラを登録
-        internal Subscriber(string t, SubscribeHandlerDelegate<T> h){
-            RecivedHandler = h;
-            Topic = t;
-        }
-
-        // WebSocketからデータを受信した際にJSONをパースしてハンドラを実行する関数
-        internal override void ReciveData(string m)
-        {
-            SubscribeMessage<T> data = JsonUtility.FromJson<SubscribeMessage<T>>(m);
-            RecivedHandler(data.msg);
-        }
-    }
-
-    public class RBSocket
+namespace ROSBridgeSharp
+{
+    public class RBSocket : MonoBehaviour
     {
-        internal string IPAddress;
-        internal string Port;
-        internal bool isConnected = false;
+        internal string IPAddress = "192.168.3.28"; // IPアドレス
+        internal string Port = "9000"; //ポート番号
 
-        public WebSocket ws;
-
-        public delegate void SubscribeDelegate(string message);
+        private WebSocket ws; // WebSocketSharp
+        private static RBSocket instance; // インスタンスの実体
         private readonly Queue<string> MessageQueue = new Queue<string>();
-        private readonly Queue<string> OperationQueue = new Queue<string>();
-        internal Dictionary<string, Subscriber> Subscribers = new Dictionary<string, Subscriber>();
+        private List<SubscribeManager> Subscribers = new List<SubscribeManager>();
+        private bool isConnected = false;
 
-        public void ConnectionStart()
+        // インスタンスのプロパティー
+        public static RBSocket Instance
         {
-            ws = new WebSocket("ws://" + IPAddress + ":" + Port + "/");
-
-            ws.OnOpen += (sender, e) =>
+            get
             {
-                Debug.Log("WebSocket Opened.");
-                isConnected = true;
-            };
-
-            ws.OnMessage += (sender, e) =>
-            {
-                MessageQueue.Enqueue(e.Data);
-            };
-
-            ws.OnClose += (sender, e) =>
-            {
-                Debug.Log("WebSocket Closed.");
-            };
-
-            ws.Connect();
-        }
-
-        public void ConnectionClose()
-        {
-            MessageQueue.Clear();
-            foreach (var s in Subscribers){
-                RemoveSubscribe(s.Key);
-            }
-            Subscribers.Clear();
-            ws.Close();
-            isConnected = false;
-        }
-
-        public void Update()
-        {
-            if(OperationQueue.Count > 0 && isConnected)
-            {
-                string operation = OperationQueue.Dequeue();
-                ws.Send(operation);
-            }
-            if(MessageQueue.Count > 0 && isConnected)
-            {
-                string message = MessageQueue.Dequeue();
-                var data = JsonUtility.FromJson<OperationMessage>(message);
-                foreach (var s in Subscribers){
-                    if(data.topic == s.Key){
-                        s.Value.ReciveData(message);
+                if (instance == null)
+                {
+                    instance = FindObjectOfType<RBSocket>();
+                    if (instance != null)
+                    {
+                        Debug.Log("RBScoket Instance OK.");
+                    }
+                    else
+                    {
+                        Debug.LogError("RBSocket Instance Error.");
                     }
                 }
+                return instance;
             }
         }
 
-        public void AddSubscribe<T>(string t, SubscribeHandlerDelegate<T> h) where T : Message
+        // 接続状態のプロパティー
+        public bool IsConnected
         {
-            Subscribers.Add(t, new Subscriber<T>(t, h));
-            OperationMessage message = new OperationMessage();
-            message.op = "subscribe";
-            message.topic = t;
-
-            string data = JsonUtility.ToJson(message);
-            OperationQueue.Enqueue(data);
+            get
+            {
+                return isConnected;
+            }
         }
 
-        public void RemoveSubscribe(string t)
+        public void Connect()
         {
-            OperationMessage message = new OperationMessage();
-            message.op = "unsubscribe";
-            message.topic = t;
+            if (!isConnected)
+            {
+                ws = new WebSocket("ws://" + IPAddress + ":" + Port + "/");
+                ws.OnOpen += (sender, e) =>
+                {
+                    Debug.Log("WebSocket Opened.");
+                    isConnected = true;
+                };
 
-            string data = JsonUtility.ToJson(message);
-            ws.Send(data);
+                ws.OnMessage += (sender, e) =>
+                {
+                    var msg = JsonUtility.FromJson<QueueSubscribeMessage>(e.Data);
+                    foreach (var sm in Subscribers)
+                    {
+                        if (msg.topic == sm.Topic)
+                        {
+                            sm.HandlerFunction(e.Data);
+                        }
+                    }
+
+                };
+
+                ws.OnClose += (sender, e) =>
+                {
+                    Debug.Log("WebSocket Closed.");
+                    isConnected = false;
+                };
+                ws.Connect();
+            }
         }
 
-        public Type Parse<Type>(string m){
-            Type data = JsonUtility.FromJson<Type>(m);
-            return data;
+        public void Disconnect()
+        {
+            if (isConnected)
+            {
+                AllUnSubscribe();
+                ws.Close();
+                isConnected = false;
+            }
+        }
+
+        private void Update()
+        {
+        }
+
+        public void SetSubscriber(SubscribeManager sm)
+        {
+            Subscribers.Add(sm);
+        }
+
+        public void Send(string m)
+        {
+            ws.Send(m);
+        }
+
+        public void UnSubscribe(string t)
+        {
+            OperationMessage unsubscribe = new OperationMessage();
+            unsubscribe.op = "unsubscribe";
+            unsubscribe.topic = t;
+
+            string data = JsonUtility.ToJson(unsubscribe);
+            Send(data);
+        }
+
+        private void AllUnSubscribe()
+        {
+            MessageQueue.Clear();
+            foreach (var s in Subscribers)
+            {
+                UnSubscribe(s.Topic);
+            }
+            Subscribers.Clear();
+        }
+
+        private void OnDestroy()
+        {
+            AllUnSubscribe();
+            Disconnect();
         }
     }
 }
