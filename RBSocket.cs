@@ -14,7 +14,8 @@ namespace ROSBridgeSharp
 
         private WebSocket ws; // WebSocketSharp
         private static RBSocket instance; // インスタンスの実体
-        private readonly Queue<string> MessageQueue = new Queue<string>();
+        private readonly Queue<string> SendQueue = new Queue<string>();
+        private readonly Queue<string> SendedQueue = new Queue<string>();
         private List<SubscribeManager> Subscribers = new List<SubscribeManager>();
         private bool isConnected = false;
 
@@ -85,6 +86,7 @@ namespace ROSBridgeSharp
         {
             if (isConnected)
             {
+                SendQueue.Clear();
                 AllUnSubscribe();
                 ws.Close();
                 isConnected = false;
@@ -93,6 +95,13 @@ namespace ROSBridgeSharp
 
         private void Update()
         {
+            if (isConnected && SendQueue.Count > 0)
+            {
+                string message = SendQueue.Dequeue();
+                Debug.Log(message);
+                ws.Send(message);
+                SendedQueue.Enqueue(message);
+            }
         }
 
         public void SetSubscriber(SubscribeManager sm)
@@ -102,7 +111,7 @@ namespace ROSBridgeSharp
 
         public void Send(string m)
         {
-            ws.Send(m);
+            SendQueue.Enqueue(m);
         }
 
         public void UnSubscribe(string t)
@@ -112,23 +121,24 @@ namespace ROSBridgeSharp
             unsubscribe.topic = t;
 
             string data = JsonUtility.ToJson(unsubscribe);
-            Send(data);
+            ws.Send(data);
+            SendQueue.Enqueue(SendedQueue.Dequeue());
         }
 
         private void AllUnSubscribe()
         {
-            MessageQueue.Clear();
             foreach (var s in Subscribers)
             {
                 UnSubscribe(s.Topic);
             }
-            Subscribers.Clear();
         }
 
         private void OnDestroy()
         {
+            SendQueue.Clear();
             AllUnSubscribe();
             Disconnect();
+            Subscribers.Clear();
         }
     }
 }
