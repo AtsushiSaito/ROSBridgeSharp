@@ -51,6 +51,23 @@ namespace ROSBridgeSharp
             }
         }
 
+        // 現在設定されているホストとの接続可能か判定
+        public bool IsConnectable
+        {
+            get
+            {
+                if (PingCheck())
+                {
+                    return true;
+                }
+                else
+                {
+                    return false;
+                }
+            }
+        }
+
+        // 外部から接続要求をする関数
         public void Connect()
         {
             if (!isConnected)
@@ -72,7 +89,11 @@ namespace ROSBridgeSharp
                             sm.HandlerFunction(e.Data);
                         }
                     }
+                };
 
+                ws.OnError += (sender, e) =>
+                {
+                    Debug.Log("WebSocket Error Message: " + e.Message);
                 };
 
                 ws.OnClose += (sender, e) =>
@@ -80,10 +101,32 @@ namespace ROSBridgeSharp
                     Debug.Log("WebSocket Closed.");
                     isConnected = false;
                 };
-                ws.Connect();
+
+                if (PingCheck())
+                {
+                    ws.Connect();
+                }
             }
         }
 
+        // Pingを飛ばして、サーバに接続できるか確認
+        private bool PingCheck()
+        {
+            Ping WSPing = new Ping(IPAddress);
+            while (!WSPing.isDone) { }
+            if (WSPing.time >= 0)
+            {
+                Debug.Log("Ping Check OK.");
+                return true;
+            }
+            else
+            {
+                Debug.LogError("Ping Check Fault.");
+                return false;
+            }
+        }
+
+        // 接続を切るときの関数
         public void Disconnect()
         {
             if (isConnected)
