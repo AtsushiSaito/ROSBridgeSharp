@@ -3,7 +3,7 @@
 namespace ROSBridgeSharp.Messages
 {
     [System.Serializable]
-    public class PFoEOutput : Message
+    public class PFoEOutput : ExtendMessage
     {
         public int right_forward;
         public int right_side;
@@ -15,5 +15,6 @@ namespace ROSBridgeSharp.Messages
         public float eta;
 
         public int[] particles_pos;
+        public override string Type() { return "raspimouse_gamepad_teach_and_replay/PFoEOutput"; }
     }
 }

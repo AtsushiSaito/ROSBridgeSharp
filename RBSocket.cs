@@ -16,6 +16,8 @@ namespace ROSBridgeSharp
         private static RBSocket instance; // インスタンスの実体
         private readonly Queue<string> SendQueue = new Queue<string>();
         private readonly Queue<string> SendedQueue = new Queue<string>();
+
+        private List<UnAdvertise> UnAdvertises = new List<UnAdvertise>();
         private List<SubscribeManager> Subscribers = new List<SubscribeManager>();
         private bool isConnected = false;
 
@@ -109,9 +111,26 @@ namespace ROSBridgeSharp
             Subscribers.Add(sm);
         }
 
-        public void Send(string m)
+        public void QueueSend(string m)
         {
             SendQueue.Enqueue(m);
+        }
+
+        public void DirectSend(string m)
+        {
+            ws.Send(m);
+        }
+
+        public bool IsAdvertise(string t)
+        {
+            foreach (var ua in UnAdvertises)
+            {
+                if (ua.topic == t)
+                {
+                    return true;
+                }
+            }
+            return false;
         }
 
         public void UnSubscribe(string t)
@@ -125,6 +144,11 @@ namespace ROSBridgeSharp
             SendQueue.Enqueue(SendedQueue.Dequeue());
         }
 
+        public void AddUnAdvertise(UnAdvertise a)
+        {
+            UnAdvertises.Add(a);
+        }
+
         private void AllUnSubscribe()
         {
             foreach (var s in Subscribers)
@@ -133,9 +157,18 @@ namespace ROSBridgeSharp
             }
         }
 
+        private void AllUnAdvertise()
+        {
+            foreach (var ua in UnAdvertises)
+            {
+                ws.Send(JsonUtility.ToJson(ua));
+            }
+        }
+
         private void OnDestroy()
         {
             SendQueue.Clear();
+            AllUnAdvertise();
             AllUnSubscribe();
             Disconnect();
             Subscribers.Clear();

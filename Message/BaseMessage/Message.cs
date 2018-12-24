@@ -6,4 +6,10 @@ namespace ROSBridgeSharp.Messages
     public class Message
     {
     }
+
+    [System.Serializable]
+    public abstract class ExtendMessage : Message
+    {
+        public abstract string Type();
+    }
 }
