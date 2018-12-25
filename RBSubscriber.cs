@@ -24,7 +24,7 @@ public class SubscribeManager<T> : SubscribeManager where T : Message
         subscribe.topic = t; //トピック名を設定
 
         string data = JsonUtility.ToJson(subscribe); // JSONに変換
-        RBSocket.Instance.QueueSend(data); // 送信
+        RBSocket.Instance.OperationSend(data); // 送信
 
         Topic = t; // トピック名を登録
         Handler = h; // ハンドラを登録

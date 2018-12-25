@@ -14,8 +14,8 @@ namespace ROSBridgeSharp
 
         private WebSocket ws; // WebSocketSharp
         private static RBSocket instance; // インスタンスの実体
-        private readonly Queue<string> SendQueue = new Queue<string>();
-        private readonly Queue<string> SendedQueue = new Queue<string>();
+        private readonly Queue<string> WaitingSendOperationQueue = new Queue<string>();
+        private readonly Queue<string> CompletedSendOperationQueue = new Queue<string>();
 
         private List<UnAdvertise> UnAdvertises = new List<UnAdvertise>();
         private List<SubscribeManager> Subscribers = new List<SubscribeManager>();
@@ -131,39 +131,50 @@ namespace ROSBridgeSharp
         {
             if (isConnected)
             {
-                SendQueue.Clear();
+                // 終了時に、送信されていないデータは棄却
+                WaitingSendOperationQueue.Clear();
+                // サブスクライバの停止申請
                 AllUnSubscribe();
+                // OperationSend()経由で送られたデータを保持
+                AgainSendingData();
+
                 ws.Close();
                 isConnected = false;
             }
         }
 
+        // 更新処理
         private void Update()
         {
-            if (isConnected && SendQueue.Count > 0)
+            if (isConnected && WaitingSendOperationQueue.Count > 0)
             {
-                string message = SendQueue.Dequeue();
+                string message = WaitingSendOperationQueue.Dequeue();
                 Debug.Log(message);
                 ws.Send(message);
-                SendedQueue.Enqueue(message);
+                // 送信済みQueueに追加
+                CompletedSendOperationQueue.Enqueue(message);
             }
         }
 
+        // サブスクライバをセットする関数
         public void SetSubscriber(SubscribeManager sm)
         {
             Subscribers.Add(sm);
         }
 
-        public void QueueSend(string m)
+        // オペレーションに関する送信用(Queueが再接続時に再送信される)
+        public void OperationSend(string m)
         {
-            SendQueue.Enqueue(m);
+            WaitingSendOperationQueue.Enqueue(m);
         }
 
-        public void DirectSend(string m)
+        // トピックなどの送信用
+        public void MessageSend(string m)
         {
             ws.Send(m);
         }
 
+        // パブリッシュの申請済みかどうか。
         public bool IsAdvertise(string t)
         {
             foreach (var ua in UnAdvertises)
@@ -176,6 +187,7 @@ namespace ROSBridgeSharp
             return false;
         }
 
+        // 指定のトピックのサブスクライバを停止する
         public void UnSubscribe(string t)
         {
             OperationMessage unsubscribe = new OperationMessage();
@@ -184,14 +196,15 @@ namespace ROSBridgeSharp
 
             string data = JsonUtility.ToJson(unsubscribe);
             ws.Send(data);
-            SendQueue.Enqueue(SendedQueue.Dequeue());
         }
 
+        // パブリッシュ終了時に送信するUnAdvertiseを追加
         public void AddUnAdvertise(UnAdvertise a)
         {
             UnAdvertises.Add(a);
         }
 
+        // すべてのサブスクライブを停止
         private void AllUnSubscribe()
         {
             foreach (var s in Subscribers)
@@ -200,6 +213,14 @@ namespace ROSBridgeSharp
             }
         }
 
+        // UnAdvertiseを送信
+        public void UnAdvertise(UnAdvertise ua)
+        {
+            string data = JsonUtility.ToJson(ua);
+            ws.Send(data);
+        }
+
+        // すべてのUnAdvertiseを送信
         private void AllUnAdvertise()
         {
             foreach (var ua in UnAdvertises)
@@ -208,13 +229,16 @@ namespace ROSBridgeSharp
             }
         }
 
-        private void OnDestroy()
+        // 再接続時に、オペレーション系を再送信
+        private void AgainSendingData()
         {
-            SendQueue.Clear();
-            AllUnAdvertise();
-            AllUnSubscribe();
-            Disconnect();
-            Subscribers.Clear();
+            string data = CompletedSendOperationQueue.Dequeue();
+            Debug.Log(data);
+            WaitingSendOperationQueue.Enqueue(data);
+            if (CompletedSendOperationQueue.Count > 0)
+            {
+                AgainSendingData();
+            }
         }
     }
 }

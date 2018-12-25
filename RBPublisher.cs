@@ -21,7 +21,7 @@ public class RBPublisher<T> where T : ExtendMessage, new()
         advertise.topic = t;
         advertise.type = mesType.Type();
 
-        RBSocket.Instance.QueueSend(JsonUtility.ToJson(advertise));
+        RBSocket.Instance.OperationSend(JsonUtility.ToJson(advertise));
 
         UnAdvertise unadvertise = new UnAdvertise();
         unadvertise.topic = t;
@@ -34,7 +34,7 @@ public class RBPublisher<T> where T : ExtendMessage, new()
             if (RBSocket.Instance.IsConnected)
             {
                 data.msg = d;
-                RBSocket.Instance.DirectSend(JsonUtility.ToJson(data));
+                RBSocket.Instance.MessageSend(JsonUtility.ToJson(data));
             }
             else
             {
