@@ -232,12 +232,14 @@ namespace ROSBridgeSharp
         // 再接続時に、オペレーション系を再送信
         private void AgainSendingData()
         {
-            string data = CompletedSendOperationQueue.Dequeue();
-            Debug.Log(data);
-            WaitingSendOperationQueue.Enqueue(data);
-            if (CompletedSendOperationQueue.Count > 0)
-            {
-                AgainSendingData();
+            if(CompletedSendOperationQueue.Count > 0) {
+                string data = CompletedSendOperationQueue.Dequeue();
+                Debug.Log(data);
+                WaitingSendOperationQueue.Enqueue(data);
+                if (CompletedSendOperationQueue.Count > 0)
+                {
+                    AgainSendingData();
+                }
             }
         }
     }
