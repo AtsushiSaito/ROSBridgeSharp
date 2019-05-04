@@ -9,8 +9,10 @@ namespace RBS
 {
     public class RBSocket : MonoBehaviour
     {
-        internal string IPAddress = "192.168.3.28"; // IPアドレス
-        internal string Port = "9000"; //ポート番号
+        public string IPAddress = ""; // IPアドレス
+        public string Port = ""; //ポート番号
+        public bool AutoConnect = true;
+        public float ConnectWaitTime = 2.5f;
 
         private WebSocket ws; // WebSocketSharp
         private static RBSocket instance; // インスタンスの実体
@@ -141,6 +143,11 @@ namespace RBS
                 ws.Close();
                 isConnected = false;
             }
+        }
+
+        private void Start()
+        {
+            Invoke("Connect", ConnectWaitTime);
         }
 
         // 更新処理
