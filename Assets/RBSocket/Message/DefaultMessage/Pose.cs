@@ -1,4 +1,4 @@
-﻿namespace ROSBridgeSharp.Messages
+﻿namespace RBS.Messages
 {
     [System.Serializable]
     public class Pose : ExtendMessage

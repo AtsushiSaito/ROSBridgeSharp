@@ -3,9 +3,9 @@ using UnityEngine;
 using System;
 using System.Threading;
 using WebSocketSharp;
-using ROSBridgeSharp.Messages;
+using RBS.Messages;
 
-namespace ROSBridgeSharp
+namespace RBS
 {
     public class RBSocket : MonoBehaviour
     {

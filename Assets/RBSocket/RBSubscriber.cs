@@ -2,8 +2,8 @@ using System.Collections.Generic;
 using UnityEngine;
 using System;
 using WebSocketSharp;
-using ROSBridgeSharp;
-using ROSBridgeSharp.Messages;
+using RBS;
+using RBS.Messages;
 
 // サブスクライバを管理するマネージャー
 public abstract class SubscribeManager

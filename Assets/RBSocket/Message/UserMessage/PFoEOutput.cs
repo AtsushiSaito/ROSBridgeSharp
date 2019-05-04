@@ -1,6 +1,6 @@
 ﻿using System;
 
-namespace ROSBridgeSharp.Messages
+namespace RBS.Messages
 {
     [System.Serializable]
     public class PFoEOutput : ExtendMessage
