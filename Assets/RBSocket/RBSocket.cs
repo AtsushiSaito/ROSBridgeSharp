@@ -1,4 +1,4 @@
-﻿using System.Collections.Generic;
+using System.Collections.Generic;
 using UnityEngine;
 using System;
 using System.Threading;
@@ -83,7 +83,7 @@ namespace RBS
 
                 ws.OnMessage += (sender, e) =>
                 {
-                    var msg = JsonUtility.FromJson<QueueSubscribeMessage>(e.Data);
+                    var msg = JsonUtility.FromJson<SubscribeMessage>(e.Data);
                     foreach (var sm in Subscribers)
                     {
                         if (msg.topic == sm.Topic)

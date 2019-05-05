@@ -1,7 +1,7 @@
 ﻿namespace RBS.Messages
 {
     [System.Serializable]
-    public class QueueSubscribeMessage : Message
+    public class SubscribeMessage : Message
     {
         public string op;
         public string topic;
