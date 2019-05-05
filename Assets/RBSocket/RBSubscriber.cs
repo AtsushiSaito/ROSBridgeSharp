@@ -8,25 +8,26 @@ using RBS.Messages;
 // サブスクライバを管理するマネージャー
 public abstract class SubscribeManager
 {
-    public string Topic; // 内部で保持するトピック名
-    public OperationMessage subscribe; // オペレーションメッセージ
+    public string topic; // 内部で保持するトピック名
+    public SubscribeOperationMessage subscribe; // オペレーションメッセージ
     public abstract void HandlerFunction(string m);
 }
 
-public class SubscribeManager<T> : SubscribeManager where T : Message
+public class SubscribeManager<T> : SubscribeManager where T : ExtendMessage, new()
 {
     internal Action<T> Handler; // コールバック関数のハンドラーのデリゲートを生成
+    internal T mesType;
     public SubscribeManager(string t, Action<T> h) // コンストラクタ
     {
         // オペレーションを設定
-        subscribe = new OperationMessage(); // オペレーションメッセージを作成
-        subscribe.op = "subscribe"; // サブスクライブ申請
+        mesType = new T();
+        subscribe = new SubscribeOperationMessage(); // オペレーションメッセージを作成
         subscribe.topic = t; //トピック名を設定
-
+        subscribe.type = mesType.Type();
         string data = JsonUtility.ToJson(subscribe); // JSONに変換
         RBSocket.Instance.OperationSend(data); // 送信
 
-        Topic = t; // トピック名を登録
+        topic = t; // トピック名を登録
         Handler = h; // ハンドラを登録
     }
     internal SubscribeMessage<T> ParseMessage(string m) // データが降ってきたらJsonをパース
@@ -41,12 +42,12 @@ public class SubscribeManager<T> : SubscribeManager where T : Message
     }
 }
 
-public class RBSubscriber<T> where T : Message
+public class RBSubscriber<T> where T : ExtendMessage, new()
 {
-    internal string Topic;
+    internal string topic;
     public RBSubscriber(string t, Action<T> h)
     {
-        Topic = t;
+        topic = t;
         SubscribeManager<T> manager = new SubscribeManager<T>(t, h);
         RBSocket.Instance.SetSubscriber(manager);
     }

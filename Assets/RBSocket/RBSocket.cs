@@ -86,7 +86,7 @@ namespace RBS
                     var msg = JsonUtility.FromJson<SubscribeMessage>(e.Data);
                     foreach (var sm in Subscribers)
                     {
-                        if (msg.topic == sm.Topic)
+                        if (msg.topic == sm.topic)
                         {
                             sm.HandlerFunction(e.Data);
                         }
@@ -196,8 +196,7 @@ namespace RBS
         // 指定のトピックのサブスクライバを停止する
         public void UnSubscribe(string t)
         {
-            OperationMessage unsubscribe = new OperationMessage();
-            unsubscribe.op = "unsubscribe";
+            UnSubscribeOperationMessage unsubscribe = new UnSubscribeOperationMessage();
             unsubscribe.topic = t;
 
             string data = JsonUtility.ToJson(unsubscribe);
@@ -215,7 +214,7 @@ namespace RBS
         {
             foreach (var s in Subscribers)
             {
-                UnSubscribe(s.Topic);
+                UnSubscribe(s.topic);
             }
         }
 
