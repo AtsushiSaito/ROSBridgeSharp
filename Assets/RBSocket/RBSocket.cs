@@ -182,14 +182,14 @@ namespace RBS
         }
 
         // パブリッシュの申請済みかどうか。
-        public bool IsAdvertise(string t)
+        public bool IsAdvertise(string am)
         {
-            foreach (var ua in UnAdvertises)
+            foreach (var cm in CompletedSendOperationQueue)
             {
-                if (ua.topic == t)
+                if (cm == am)
                 {
                     return true;
-                }
+                }                
             }
             return false;
         }
