@@ -1,4 +1,4 @@
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using UnityEngine;
 using System;
 using System.Threading;
@@ -118,12 +118,12 @@ namespace RBS
             while (!WSPing.isDone) { }
             if (WSPing.time >= 0)
             {
-                Debug.Log("Ping Check OK.");
+                Debug.Log("Ping Check OK (" + IPAddress + ")");
                 return true;
             }
             else
             {
-                Debug.LogError("Ping Check Fault.");
+                Debug.LogError("Ping Check Fault (" + IPAddress + ")");
                 return false;
             }
         }
@@ -156,7 +156,6 @@ namespace RBS
             if (isConnected && WaitingSendOperationQueue.Count > 0)
             {
                 string message = WaitingSendOperationQueue.Dequeue();
-                Debug.Log(message);
                 ws.Send(message);
                 // 送信済みQueueに追加
                 CompletedSendOperationQueue.Enqueue(message);
@@ -189,7 +188,7 @@ namespace RBS
                 if (cm == am)
                 {
                     return true;
-                }                
+                }
             }
             return false;
         }
@@ -239,7 +238,8 @@ namespace RBS
         // 再接続時に、オペレーション系を再送信
         private void AgainSendingData()
         {
-            if(CompletedSendOperationQueue.Count > 0) {
+            if (CompletedSendOperationQueue.Count > 0)
+            {
                 string data = CompletedSendOperationQueue.Dequeue();
                 Debug.Log(data);
                 WaitingSendOperationQueue.Enqueue(data);
