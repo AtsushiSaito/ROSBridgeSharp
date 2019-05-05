@@ -50,3 +50,5 @@ Thumbs.db
 #python bytecode cache, for some plugins.
 *.pyc
 ProjectSettings/UnityConnectSettings.asset
+.vscode/settings.json
+.vscode/launch.json
