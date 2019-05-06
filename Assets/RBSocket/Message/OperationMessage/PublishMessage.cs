@@ -1,25 +1,34 @@
 namespace RBS.Messages
 {
     [System.Serializable]
-    public class PublishMessage<T> : Message where T : ExtendMessage
+    public class PublishMessage<T> : OperationMessage where T : ExtendMessage
     {
-        public string op = "publish";
         public string topic;
         public T msg;
+        public PublishMessage()
+        {
+            op = "publish";
+        }
     }
 
     [System.Serializable]
-    public class Advertise : Message
+    public class Advertise : OperationMessage
     {
-        public string op = "advertise";
         public string topic;
         public string type;
+        public Advertise()
+        {
+            op = "advertise";
+        }
     }
 
     [System.Serializable]
-    public class UnAdvertise : Message
+    public class UnAdvertise : OperationMessage
     {
-        public string op = "unadvertise";
         public string topic;
+        public UnAdvertise()
+        {
+            op = "unadvertise";
+        }
     }
 }

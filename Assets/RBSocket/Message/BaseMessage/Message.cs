@@ -12,4 +12,11 @@ namespace RBS.Messages
     {
         public abstract string Type();
     }
+
+    [System.Serializable]
+    public class OperationMessage : Message
+    {
+        public string op;
+        public string id;
+    }
 }
