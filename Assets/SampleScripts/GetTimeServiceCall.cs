@@ -4,7 +4,7 @@ using UnityEngine;
 using RBS;
 using RBS.Messages;
 
-public class GetTimeService : MonoBehaviour
+public class GetTimeServiceCall : MonoBehaviour
 {
     private RBServiceClient<RBS.Messages.rosapi.GetTimeRequest, RBS.Messages.rosapi.GetTimeResponse> service_client;
 
