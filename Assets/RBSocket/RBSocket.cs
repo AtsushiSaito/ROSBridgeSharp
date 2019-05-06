@@ -21,6 +21,7 @@ namespace RBS
 
         private List<UnAdvertise> UnAdvertises = new List<UnAdvertise>();
         private List<SubscribeManager> Subscribers = new List<SubscribeManager>();
+        private List<ServiceClientManager> ServiceClients = new List<ServiceClientManager>();
         private bool isConnected = false;
 
         // インスタンスのプロパティー
@@ -83,12 +84,32 @@ namespace RBS
 
                 ws.OnMessage += (sender, e) =>
                 {
-                    var msg = JsonUtility.FromJson<SubscribeMessage>(e.Data);
-                    foreach (var sm in Subscribers)
+                    // 受信データのオペレーションを抽出
+                    var data = JsonUtility.FromJson<OperationMessage>(e.Data);
+
+                    // サブスクライブ(相手がpublish)データの場合
+                    if (data.op == "publish")
                     {
-                        if (msg.topic == sm.topic)
+                        var msg = JsonUtility.FromJson<SubscribeMessage>(e.Data);
+                        foreach (var sm in Subscribers)
                         {
-                            sm.HandlerFunction(e.Data);
+                            if (msg.topic == sm.topic)
+                            {
+                                sm.HandlerFunction(e.Data);
+                            }
+                        }
+                    }
+
+                    // サービスレスポンスの場合
+                    else if (data.op == "service_response")
+                    {
+                        var msg = JsonUtility.FromJson<ServiceResponseMessage>(e.Data);
+                        foreach (var sc in ServiceClients)
+                        {
+                            if (msg.service == sc.service_name)
+                            {
+                                sc.ResponseFunction(e.Data);
+                            }
                         }
                     }
                 };
@@ -166,6 +187,12 @@ namespace RBS
         public void SetSubscriber(SubscribeManager sm)
         {
             Subscribers.Add(sm);
+        }
+
+        // サービスクライアントをセットする関数
+        public void SetServiceClient(ServiceClientManager scm)
+        {
+            ServiceClients.Add(scm);
         }
 
         // オペレーションに関する送信用(Queueが再接続時に再送信される)
