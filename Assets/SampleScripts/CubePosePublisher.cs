@@ -18,7 +18,8 @@ public class CubePosePublisher : MonoBehaviour
     void Update()
     {
         Debug.Log(RBSocket.Instance.IsConnected);
-        if (RBSocket.Instance.IsConnected) {
+        if (RBSocket.Instance.IsConnected)
+        {
 
             RBS.Messages.geometry_msgs.Pose pose = new RBS.Messages.geometry_msgs.Pose();
             pose.position.x = cube.transform.position.x;
