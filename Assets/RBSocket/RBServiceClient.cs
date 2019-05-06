@@ -62,11 +62,12 @@ public class RBServiceClient<Tin, Tout> where Tin : ExtendMessage where Tout : E
 
     private IEnumerator Waiting()
     {
-        yield return new WaitForSeconds(0.05f); // num秒待機
+        yield return new WaitForSeconds(0.02f); // num秒待機
     }
 
     public void Call(ref Tin in_data, ref Tout out_data)
     {
+        manager.isResponseReceived = false;
         manager.SendData(ref in_data);
         while (!manager.isResponseReceived)
         {
