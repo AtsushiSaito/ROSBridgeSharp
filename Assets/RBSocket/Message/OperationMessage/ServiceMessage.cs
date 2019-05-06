@@ -51,4 +51,25 @@ namespace RBS.Messages
             op = "service_response";
         }
     }
+
+    [System.Serializable]
+    public class ServiceAdvertiseMessage : OperationMessage
+    {
+        public string service;
+        public string type;
+        public ServiceAdvertiseMessage()
+        {
+            op = "advertise_service";
+        }
+    }
+
+    [System.Serializable]
+    public class ServiceUnadvertiseMessage : OperationMessage
+    {
+        public string service;
+        public ServiceUnadvertiseMessage()
+        {
+            op = "unadvertise_service";
+        }
+    }
 }

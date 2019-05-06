@@ -1,4 +1,4 @@
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using UnityEngine;
 using System;
 using System.Threading;
@@ -20,8 +20,10 @@ namespace RBS
         private readonly Queue<string> CompletedSendOperationQueue = new Queue<string>();
 
         private List<UnAdvertise> UnAdvertises = new List<UnAdvertise>();
+        private List<ServiceUnadvertiseMessage> UnServiceAdvertises = new List<ServiceUnadvertiseMessage>();
         private List<SubscribeManager> Subscribers = new List<SubscribeManager>();
         private List<ServiceClientManager> ServiceClients = new List<ServiceClientManager>();
+        private List<ServiceServerManager> ServiceServers = new List<ServiceServerManager>();
         private bool isConnected = false;
         private bool isStarting = false;
 
@@ -113,6 +115,19 @@ namespace RBS
                             }
                         }
                     }
+
+                    // サービスレスポンスの場合
+                    else if (data.op == "call_service")
+                    {
+                        var msg = JsonUtility.FromJson<CallServiceMessage>(e.Data);
+                        foreach (var ss in ServiceServers)
+                        {
+                            if (msg.service == ss.service)
+                            {
+                                ss.HandlerFunction(e.Data);
+                            }
+                        }
+                    }
                 };
 
                 ws.OnError += (sender, e) =>
@@ -193,6 +208,12 @@ namespace RBS
             Subscribers.Add(sm);
         }
 
+        // サービスサーバーをセットする関数
+        public void SetServiceServer(ServiceServerManager ssm)
+        {
+            ServiceServers.Add(ssm);
+        }
+
         // サービスクライアントをセットする関数
         public void SetServiceClient(ServiceClientManager scm)
         {
@@ -240,6 +261,12 @@ namespace RBS
             UnAdvertises.Add(a);
         }
 
+        // 終了時に送信するServiceUnAdvertiseを追加
+        public void AddServiceUnAdvertise(ServiceUnadvertiseMessage a)
+        {
+            UnServiceAdvertises.Add(a);
+        }
+
         // すべてのサブスクライブを停止
         private void AllUnSubscribe()
         {
@@ -260,6 +287,11 @@ namespace RBS
         private void AllUnAdvertise()
         {
             foreach (var ua in UnAdvertises)
+            {
+                ws.Send(JsonUtility.ToJson(ua));
+            }
+
+            foreach (var ua in UnServiceAdvertises)
             {
                 ws.Send(JsonUtility.ToJson(ua));
             }
