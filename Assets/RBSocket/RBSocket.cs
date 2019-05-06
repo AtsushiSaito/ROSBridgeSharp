@@ -1,4 +1,4 @@
-﻿using System.Collections.Generic;
+using System.Collections.Generic;
 using UnityEngine;
 using System;
 using System.Threading;
@@ -23,6 +23,7 @@ namespace RBS
         private List<SubscribeManager> Subscribers = new List<SubscribeManager>();
         private List<ServiceClientManager> ServiceClients = new List<ServiceClientManager>();
         private bool isConnected = false;
+        private bool isStarting = false;
 
         // インスタンスのプロパティー
         public static RBSocket Instance
@@ -158,6 +159,8 @@ namespace RBS
                 WaitingSendOperationQueue.Clear();
                 // サブスクライバの停止申請
                 AllUnSubscribe();
+                // パブリッシャやサービスサーバの停止申請
+                AllUnAdvertise();
                 // OperationSend()経由で送られたデータを保持
                 AgainSendingData();
 
@@ -174,6 +177,7 @@ namespace RBS
         // 更新処理
         private void Update()
         {
+            isStarting = true;
             if (isConnected && WaitingSendOperationQueue.Count > 0)
             {
                 string message = WaitingSendOperationQueue.Dequeue();
@@ -272,6 +276,21 @@ namespace RBS
                 if (CompletedSendOperationQueue.Count > 0)
                 {
                     AgainSendingData();
+                }
+            }
+        }
+
+        void OnDestroy()
+        {
+            if (isStarting)
+            {
+                if (!Application.isPlaying)
+                {
+                    Disconnect();
+                }
+                else
+                {
+                    Disconnect();
                 }
             }
         }
