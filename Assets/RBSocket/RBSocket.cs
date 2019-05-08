@@ -11,7 +11,7 @@ namespace RBS
     {
         public string IPAddress = ""; // IPアドレス
         public string Port = ""; //ポート番号
-        public bool AutoConnect = true;
+        public bool AutoConnect = false;
         public float ConnectWaitTime = 2.5f;
 
         private WebSocket ws; // WebSocketSharp
@@ -186,7 +186,10 @@ namespace RBS
 
         private void Start()
         {
-            Invoke("Connect", ConnectWaitTime);
+            if (AutoConnect)
+            {
+                Invoke("Connect", ConnectWaitTime);
+            }
         }
 
         // 更新処理
