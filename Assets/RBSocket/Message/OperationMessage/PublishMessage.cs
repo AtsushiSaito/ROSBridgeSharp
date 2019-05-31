@@ -12,21 +12,21 @@ namespace RBS.Messages
     }
 
     [System.Serializable]
-    public class Advertise : OperationMessage
+    public class PublishAdvertiseMessage : OperationMessage
     {
         public string topic;
         public string type;
-        public Advertise()
+        public PublishAdvertiseMessage()
         {
             op = "advertise";
         }
     }
 
     [System.Serializable]
-    public class UnAdvertise : OperationMessage
+    public class PublishUnAdvertiseMessage : OperationMessage
     {
         public string topic;
-        public UnAdvertise()
+        public PublishUnAdvertiseMessage()
         {
             op = "unadvertise";
         }

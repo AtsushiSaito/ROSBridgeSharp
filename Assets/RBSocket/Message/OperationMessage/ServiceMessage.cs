@@ -64,10 +64,10 @@ namespace RBS.Messages
     }
 
     [System.Serializable]
-    public class ServiceUnadvertiseMessage : OperationMessage
+    public class ServiceUnAdvertiseMessage : OperationMessage
     {
         public string service;
-        public ServiceUnadvertiseMessage()
+        public ServiceUnAdvertiseMessage()
         {
             op = "unadvertise_service";
         }

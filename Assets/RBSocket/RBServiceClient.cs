@@ -57,7 +57,7 @@ public class RBServiceClient<Tin, Tout> where Tin : ExtendMessage where Tout : E
     {
         service = s;
         manager = new ServiceClientManager<Tin, Tout>(s);
-        RBSocket.Instance.SetServiceClient(manager);
+        RBSocket.Instance.AddServiceClient(manager);
     }
 
     private IEnumerator Waiting()

@@ -43,7 +43,7 @@ public class RBPublisher<T> : RBPublisher where T : ExtendMessage, new()
         get { return typeName; }
     }
 
-    public RBPublisher(string t, string id = "")
+    public RBPublisher(string t, string id = "", bool reconnection = true)
     {
         Topic = t; Id = id;
         publishMessage = new PublishMessage<T>();
@@ -54,16 +54,16 @@ public class RBPublisher<T> : RBPublisher where T : ExtendMessage, new()
 
     private void ReadyAdvertise()
     {
-        Advertise advertise = new Advertise();
+        PublishAdvertiseMessage advertise = new PublishAdvertiseMessage();
         advertise.topic = Topic;
         advertise.type = TypeName;
         AdvertiseMsg = JsonUtility.ToJson(advertise);
-        RBSocket.Instance.OperationSend(AdvertiseMsg);
+        RBSocket.Instance.SendOperationMessage(AdvertiseMsg);
     }
 
     private void ReadyUnAdvertise()
     {
-        UnAdvertise unadvertise = new UnAdvertise();
+        PublishUnAdvertiseMessage unadvertise = new PublishUnAdvertiseMessage();
         unadvertise.topic = Topic;
         RBSocket.Instance.AddUnAdvertise(unadvertise);
     }

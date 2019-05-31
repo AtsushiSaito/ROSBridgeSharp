@@ -21,7 +21,7 @@ public class RBSubscriber<T> where T : ExtendMessage, new()
     {
         Topic = t;
         SubscribeManager<T> manager = new SubscribeManager<T>(t, h, RBSocket.Instance.IDCount.ToString());
-        RBSocket.Instance.SetSubscriber(manager);
+        RBSocket.Instance.AddSubscribeManager(manager);
     }
 }
 
@@ -76,7 +76,7 @@ public class SubscribeManager<T> : SubscribeManager where T : ExtendMessage, new
         SubscribeOperationMessage subscribeOperationMessage = new SubscribeOperationMessage();
         subscribeOperationMessage.topic = Topic;
         subscribeOperationMessage.type = TypeName;
-        RBSocket.Instance.OperationSend(JsonUtility.ToJson(subscribeOperationMessage));
+        RBSocket.Instance.SendOperationMessage(JsonUtility.ToJson(subscribeOperationMessage));
     }
 
     public SubscribeManager(string t, SubscribeDelegate<T> h, string id = "")

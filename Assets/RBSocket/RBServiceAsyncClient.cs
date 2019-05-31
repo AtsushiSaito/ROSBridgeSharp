@@ -7,13 +7,13 @@ using RBS;
 using RBS.Messages;
 
 
-public class ServiceClientAsyncManager<Tin, Tout> : ServiceClientManager where Tin : ExtendMessage where Tout : ExtendMessage, new()
+public class ServiceClientASyncManager<Tin, Tout> : ServiceClientManager where Tin : ExtendMessage where Tout : ExtendMessage, new()
 {
     internal string data;
     internal ServiceResponseMessage<Tout> receive_data;
     internal CallServiceMessage<Tin> request_data;
     internal Action<Tout> Handler; // コールバック関数のハンドラーのデリゲートを生成
-    public ServiceClientAsyncManager(string s, Action<Tout> h) // コンストラクタ
+    public ServiceClientASyncManager(string s, Action<Tout> h) // コンストラクタ
     {
         // オペレーションを設定
         service_name = s;
@@ -43,12 +43,12 @@ public class ServiceClientAsyncManager<Tin, Tout> : ServiceClientManager where T
 public class RBServiceAsyncClient<Tin, Tout> where Tin : ExtendMessage where Tout : ExtendMessage, new()
 {
     internal string service;
-    ServiceClientAsyncManager<Tin, Tout> manager;
+    ServiceClientASyncManager<Tin, Tout> manager;
     public RBServiceAsyncClient(string s, Action<Tout> h)
     {
         service = s;
-        manager = new ServiceClientAsyncManager<Tin, Tout>(s, h);
-        RBSocket.Instance.SetServiceClient(manager);
+        manager = new ServiceClientASyncManager<Tin, Tout>(s, h);
+        RBSocket.Instance.AddServiceClient(manager);
     }
 
     public void Call(ref Tin in_data, ref Tout out_data)

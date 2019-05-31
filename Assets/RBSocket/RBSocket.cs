@@ -5,81 +5,67 @@ using System.Threading;
 using WebSocketSharp;
 using RBS.Messages;
 
+
 namespace RBS
 {
     public class RBSocket : MonoBehaviour
     {
-        public string IPAddress = ""; // IPアドレス
-        public string Port = ""; //ポート番号
+        public string IPAddress;
+        public string Port;
         public bool AutoConnect = false;
         public float ConnectWaitTime = 2.5f;
 
-        private WebSocket ws; // WebSocketSharp
-        private static RBSocket instance; // インスタンスの実体
-        private readonly Queue<string> WaitingSendOperationQueue = new Queue<string>();
-        private readonly Queue<string> CompletedSendOperationQueue = new Queue<string>();
+        private WebSocket ws;
+        private static RBSocket instance;
 
-        private List<UnAdvertise> UnAdvertises = new List<UnAdvertise>();
-        private List<ServiceUnadvertiseMessage> UnServiceAdvertises = new List<ServiceUnadvertiseMessage>();
-        private List<SubscribeManager> Subscribers = new List<SubscribeManager>();
-        private List<ServiceClientManager> ServiceClients = new List<ServiceClientManager>();
-        private List<ServiceServerManager> ServiceServers = new List<ServiceServerManager>();
+        private readonly Queue<string> waitOperationMessagesQueue = new Queue<string>();
+        private readonly Queue<string> sentOperationMessagesQueue = new Queue<string>();
+
+        private List<PublishUnAdvertiseMessage> publishUnAdvertiseMessages = new List<PublishUnAdvertiseMessage>();
+        private List<ServiceUnAdvertiseMessage> serviceUnAdvertiseMessages = new List<ServiceUnAdvertiseMessage>();
+
+        private List<SubscribeManager> subscribeManagers = new List<SubscribeManager>();
+        private List<ServiceClientManager> serviceClientManagers = new List<ServiceClientManager>();
+        private List<ServiceServerManager> serviceServerManagers = new List<ServiceServerManager>();
+
         private bool isConnected = false;
-        private bool isStarting = false;
+        private bool isUpdateRunning = false;
         private int idCount = 0;
 
-        // インスタンスのプロパティー
-        public static RBSocket Instance
+        private void Start()
         {
-            get
+            if (AutoConnect)
             {
-                if (instance == null)
-                {
-                    instance = FindObjectOfType<RBSocket>();
-                    if (instance != null)
-                    {
-                        Debug.Log("RBScoket Instance OK.");
-                    }
-                    else
-                    {
-                        Debug.LogError("RBSocket Instance Error.");
-                    }
-                }
-                return instance;
+                Invoke("Connect", ConnectWaitTime);
             }
         }
 
-        public int IDCount
+        private void Update()
         {
-            get { return idCount; }
-        }
-
-        // 接続状態のプロパティー
-        public bool IsConnected
-        {
-            get
+            isUpdateRunning = true;
+            if (isConnected && waitOperationMessagesQueue.Count > 0)
             {
-                return isConnected;
+                string message = waitOperationMessagesQueue.Dequeue();
+                ws.Send(message);
+                sentOperationMessagesQueue.Enqueue(message);
             }
         }
 
-        // 現在設定されているホストとの接続可能か判定
-        public bool IsConnectable
+        void OnDestroy()
         {
-            get
+            if (isUpdateRunning)
             {
-                if (PingCheck())
+                if (!Application.isPlaying)
                 {
-                    return true;
+                    Disconnect();
                 }
                 else
                 {
-                    return false;
+                    Disconnect();
                 }
             }
         }
 
-        // 外部から接続要求をする関数
         public void Connect()
         {
             if (!isConnected)
@@ -93,14 +79,11 @@ namespace RBS
 
                 ws.OnMessage += (sender, e) =>
                 {
-                    // 受信データのオペレーションを抽出
-                    var data = JsonUtility.FromJson<OperationMessage>(e.Data);
-
-                    // サブスクライブ(相手がpublish)データの場合
+                    OperationMessage data = JsonUtility.FromJson<OperationMessage>(e.Data);
                     if (data.op == "publish")
                     {
-                        var msg = JsonUtility.FromJson<SubscribeMessage>(e.Data);
-                        foreach (var sm in Subscribers)
+                        SubscribeMessage msg = JsonUtility.FromJson<SubscribeMessage>(e.Data);
+                        foreach (SubscribeManager sm in subscribeManagers)
                         {
                             if (msg.topic == sm.Topic)
                             {
@@ -112,11 +95,10 @@ namespace RBS
                         }
                     }
 
-                    // サービスレスポンスの場合
                     else if (data.op == "service_response")
                     {
-                        var msg = JsonUtility.FromJson<ServiceResponseMessage>(e.Data);
-                        foreach (var sc in ServiceClients)
+                        ServiceResponseMessage msg = JsonUtility.FromJson<ServiceResponseMessage>(e.Data);
+                        foreach (ServiceClientManager sc in serviceClientManagers)
                         {
                             if (msg.service == sc.service_name)
                             {
@@ -125,11 +107,10 @@ namespace RBS
                         }
                     }
 
-                    // サービスレスポンスの場合
                     else if (data.op == "call_service")
                     {
-                        var msg = JsonUtility.FromJson<CallServiceMessage>(e.Data);
-                        foreach (var ss in ServiceServers)
+                        CallServiceMessage msg = JsonUtility.FromJson<CallServiceMessage>(e.Data);
+                        foreach (var ss in serviceServerManagers)
                         {
                             if (msg.service == ss.service)
                             {
@@ -150,107 +131,81 @@ namespace RBS
                     isConnected = false;
                 };
 
-                if (PingCheck())
+                if (IsConnectable())
                 {
                     ws.Connect();
                 }
             }
         }
 
-        // Pingを飛ばして、サーバに接続できるか確認
-        private bool PingCheck()
-        {
-            Ping WSPing = new Ping(IPAddress);
-            while (!WSPing.isDone) { }
-            if (WSPing.time >= 0)
-            {
-                Debug.Log("Ping Check OK (" + IPAddress + ")");
-                return true;
-            }
-            else
-            {
-                Debug.LogError("Ping Check Fault (" + IPAddress + ")");
-                return false;
-            }
-        }
-
-        // 接続を切るときの関数
         public void Disconnect()
         {
             if (isConnected)
             {
-                // 終了時に、送信されていないデータは棄却
-                WaitingSendOperationQueue.Clear();
-                // サブスクライバの停止申請
+                waitOperationMessagesQueue.Clear();
                 AllUnSubscribe();
-                // パブリッシャやサービスサーバの停止申請
                 AllUnAdvertise();
-                // OperationSend()経由で送られたデータを保持
-                AgainSendingData();
+                SetReSendOperationMessages();
 
                 ws.Close();
                 isConnected = false;
             }
         }
 
-        private void Start()
+        public int IDCount
         {
-            if (AutoConnect)
+            get { return idCount; }
+        }
+
+        public bool IsConnected
+        {
+            get
             {
-                Invoke("Connect", ConnectWaitTime);
+                return isConnected;
             }
         }
 
-        // 更新処理
-        private void Update()
+        public static RBSocket Instance
         {
-            isStarting = true;
-            if (isConnected && WaitingSendOperationQueue.Count > 0)
+            get
             {
-                string message = WaitingSendOperationQueue.Dequeue();
-                ws.Send(message);
-                // 送信済みQueueに追加
-                CompletedSendOperationQueue.Enqueue(message);
+                if (instance == null)
+                {
+                    instance = FindObjectOfType<RBSocket>();
+                    if (instance != null)
+                    {
+                        Debug.Log("RBScoket instance ready.");
+                    }
+                    else
+                    {
+                        Debug.LogError("RBSocket instance not ready.");
+                    }
+                }
+                return instance;
             }
         }
 
-        // サブスクライバをセットする関数
-        public void SetSubscriber(SubscribeManager sm)
+        public bool IsConnectable()
         {
-            Subscribers.Add(sm);
-        }
-
-        // サービスサーバーをセットする関数
-        public void SetServiceServer(ServiceServerManager ssm)
-        {
-            ServiceServers.Add(ssm);
-        }
-
-        // サービスクライアントをセットする関数
-        public void SetServiceClient(ServiceClientManager scm)
-        {
-            ServiceClients.Add(scm);
-        }
-
-        // オペレーションに関する送信用(Queueが再接続時に再送信される)
-        public void OperationSend(string m)
-        {
-            WaitingSendOperationQueue.Enqueue(m);
-            idCount++;
-        }
-
-        // トピックなどの送信用
-        public void MessageSend(string m)
-        {
-            ws.Send(m);
-        }
-
-        // パブリッシュの申請済みかどうか。
-        public bool IsAdvertise(string am)
-        {
-            foreach (var cm in CompletedSendOperationQueue)
+            Ping wsPing = new Ping(IPAddress);
+            while (!wsPing.isDone) { }
+            if (wsPing.time >= 0)
             {
-                if (cm == am)
+                Debug.Log(IPAddress + " is connectable");
+                return true;
+            }
+            else
+            {
+                Debug.LogWarning(IPAddress + " is not connectable");
+                return false;
+            }
+        }
+
+        public bool IsAdvertise(string op)
+        {
+            foreach (string som in sentOperationMessagesQueue)
+            {
+                if (som == op)
                 {
                     return true;
                 }
@@ -258,85 +213,85 @@ namespace RBS
             return false;
         }
 
-        // 指定のトピックのサブスクライバを停止する
-        public void UnSubscribe(string t)
+        public void MessageSend(string m)
+        {
+            ws.Send(m);
+        }
+
+        public void SendOperationMessage(string m)
+        {
+            waitOperationMessagesQueue.Enqueue(m);
+            idCount++;
+        }
+
+        public void AddSubscribeManager(SubscribeManager sm)
+        {
+            subscribeManagers.Add(sm);
+        }
+
+        public void AddServiceServer(ServiceServerManager ssm)
+        {
+            serviceServerManagers.Add(ssm);
+        }
+
+        public void AddServiceClient(ServiceClientManager scm)
+        {
+            serviceClientManagers.Add(scm);
+        }
+
+        public void AddUnAdvertise(PublishUnAdvertiseMessage a)
+        {
+            publishUnAdvertiseMessages.Add(a);
+        }
+
+        public void AddServiceUnAdvertise(ServiceUnAdvertiseMessage a)
+        {
+            serviceUnAdvertiseMessages.Add(a);
+        }
+
+        private void SetReSendOperationMessages()
+        {
+            if (sentOperationMessagesQueue.Count > 0)
+            {
+                string data = sentOperationMessagesQueue.Dequeue();
+                waitOperationMessagesQueue.Enqueue(data);
+                if (sentOperationMessagesQueue.Count > 0)
+                {
+                    SetReSendOperationMessages();
+                }
+            }
+        }
+
+        public void SendUnAdvertiseMessage(PublishUnAdvertiseMessage ua)
+        {
+            ws.Send(JsonUtility.ToJson(ua));
+        }
+
+        public void SendUnSubscribeOperationMessage(string t)
         {
             UnSubscribeOperationMessage unsubscribe = new UnSubscribeOperationMessage();
             unsubscribe.topic = t;
-
-            string data = JsonUtility.ToJson(unsubscribe);
-            ws.Send(data);
+            ws.Send(JsonUtility.ToJson(unsubscribe));
         }
 
-        // パブリッシュ終了時に送信するUnAdvertiseを追加
-        public void AddUnAdvertise(UnAdvertise a)
-        {
-            UnAdvertises.Add(a);
-        }
-
-        // 終了時に送信するServiceUnAdvertiseを追加
-        public void AddServiceUnAdvertise(ServiceUnadvertiseMessage a)
-        {
-            UnServiceAdvertises.Add(a);
-        }
-
-        // すべてのサブスクライブを停止
         private void AllUnSubscribe()
         {
-            foreach (var s in Subscribers)
+            foreach (SubscribeManager s in subscribeManagers)
             {
-                UnSubscribe(s.Topic);
+                SendUnSubscribeOperationMessage(s.Topic);
             }
         }
 
-        // UnAdvertiseを送信
-        public void UnAdvertise(UnAdvertise ua)
-        {
-            string data = JsonUtility.ToJson(ua);
-            ws.Send(data);
-        }
-
-        // すべてのUnAdvertiseを送信
         private void AllUnAdvertise()
         {
-            foreach (var ua in UnAdvertises)
+            foreach (var ua in publishUnAdvertiseMessages)
             {
                 ws.Send(JsonUtility.ToJson(ua));
             }
 
-            foreach (var ua in UnServiceAdvertises)
+            foreach (var ua in serviceUnAdvertiseMessages)
             {
                 ws.Send(JsonUtility.ToJson(ua));
-            }
-        }
-
-        // 再接続時に、オペレーション系を再送信
-        private void AgainSendingData()
-        {
-            if (CompletedSendOperationQueue.Count > 0)
-            {
-                string data = CompletedSendOperationQueue.Dequeue();
-                Debug.Log(data);
-                WaitingSendOperationQueue.Enqueue(data);
-                if (CompletedSendOperationQueue.Count > 0)
-                {
-                    AgainSendingData();
-                }
-            }
-        }
-
-        void OnDestroy()
-        {
-            if (isStarting)
-            {
-                if (!Application.isPlaying)
-                {
-                    Disconnect();
-                }
-                else
-                {
-                    Disconnect();
-                }
             }
         }
     }

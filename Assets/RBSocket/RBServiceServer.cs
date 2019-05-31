@@ -27,7 +27,7 @@ public class ServiceServerManager<Tin, Tout> : ServiceServerManager where Tin : 
         advertise.service = s;
         advertise.type = MsgType.Type();
         string data = JsonUtility.ToJson(advertise); // JSONに変換
-        RBSocket.Instance.OperationSend(data); // 送信
+        RBSocket.Instance.SendOperationMessage(data); // 送信
 
         service = s;
         Handler = h;
@@ -65,9 +65,9 @@ public class RBServiceServer<Tin, Tout> where Tin : ExtendMessage where Tout : E
     {
         service = s;
         ServiceServerManager<Tin, Tout> manager = new ServiceServerManager<Tin, Tout>(s, h);
-        RBSocket.Instance.SetServiceServer(manager);
+        RBSocket.Instance.AddServiceServer(manager);
 
-        ServiceUnadvertiseMessage unadvertise = new ServiceUnadvertiseMessage();
+        ServiceUnAdvertiseMessage unadvertise = new ServiceUnAdvertiseMessage();
         unadvertise.service = service;
         RBSocket.Instance.AddServiceUnAdvertise(unadvertise);
     }
