@@ -1,4 +1,4 @@
-﻿using System.Collections.Generic;
+using System.Collections.Generic;
 using UnityEngine;
 using System;
 using System.Threading;
@@ -26,6 +26,7 @@ namespace RBS
         private List<ServiceServerManager> ServiceServers = new List<ServiceServerManager>();
         private bool isConnected = false;
         private bool isStarting = false;
+        private int idCount = 0;
 
         // インスタンスのプロパティー
         public static RBSocket Instance
@@ -46,6 +47,11 @@ namespace RBS
                 }
                 return instance;
             }
+        }
+
+        public int IDCount
+        {
+            get { return idCount; }
         }
 
         // 接続状態のプロパティー
@@ -96,11 +102,14 @@ namespace RBS
                         var msg = JsonUtility.FromJson<SubscribeMessage>(e.Data);
                         foreach (var sm in Subscribers)
                         {
-                            if (msg.topic == sm.topic)
+                            if (msg.topic == sm.Topic)
+                            {
+                                if (!sm.IsRunning)
                             {
                                 sm.HandlerFunction(e.Data);
                             }
                         }
+                    }
                     }
 
                     // サービスレスポンスの場合
@@ -227,6 +236,7 @@ namespace RBS
         public void OperationSend(string m)
         {
             WaitingSendOperationQueue.Enqueue(m);
+            idCount++;
         }
 
         // トピックなどの送信用
@@ -275,7 +285,7 @@ namespace RBS
         {
             foreach (var s in Subscribers)
             {
-                UnSubscribe(s.topic);
+                UnSubscribe(s.Topic);
             }
         }
 

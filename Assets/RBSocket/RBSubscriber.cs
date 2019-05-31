@@ -1,54 +1,102 @@
 using System.Collections.Generic;
 using UnityEngine;
+using System.Threading.Tasks;
 using System;
 using WebSocketSharp;
 using RBS;
 using RBS.Messages;
 
-// サブスクライバを管理するマネージャー
+public delegate void SubscribeDelegate<T>(T messageObject) where T : ExtendMessage;
+
+public class RBSubscriber<T> where T : ExtendMessage, new()
+{
+    private string topic;
+    public string Topic
+    {
+        get { return topic; }
+        set { topic = value; }
+    }
+
+    public RBSubscriber(string t, SubscribeDelegate<T> h)
+    {
+        Topic = t;
+        SubscribeManager<T> manager = new SubscribeManager<T>(t, h, RBSocket.Instance.IDCount.ToString());
+        RBSocket.Instance.SetSubscriber(manager);
+    }
+}
+
 public abstract class SubscribeManager
 {
-    public string topic; // 内部で保持するトピック名
-    public SubscribeOperationMessage subscribe; // オペレーションメッセージ
-    public abstract void HandlerFunction(string m);
+    public abstract string ID { get; set; }
+    public abstract string Topic { get; set; }
+    public abstract string TypeName { get; }
+    public abstract bool IsRunning { get; }
+    public abstract void HandlerFunction(string messageJson);
 }
 
 public class SubscribeManager<T> : SubscribeManager where T : ExtendMessage, new()
 {
-    internal Action<T> Handler; // コールバック関数のハンドラーのデリゲートを生成
-    internal T mesType;
-    public SubscribeManager(string t, Action<T> h) // コンストラクタ
-    {
-        // オペレーションを設定
-        mesType = new T();
-        subscribe = new SubscribeOperationMessage(); // オペレーションメッセージを作成
-        subscribe.topic = t; //トピック名を設定
-        subscribe.type = mesType.Type();
-        string data = JsonUtility.ToJson(subscribe); // JSONに変換
-        RBSocket.Instance.OperationSend(data); // 送信
+    private string id;
+    private string topic;
+    private string advertiseMsg;
+    private bool isRunning;
+    private string typeName = new MessagesInstance<T>().TypeName;
+    private SubscribeDelegate<T> handler;
 
-        topic = t; // トピック名を登録
-        Handler = h; // ハンドラを登録
-    }
-    internal SubscribeMessage<T> ParseMessage(string m) // データが降ってきたらJsonをパース
+    public override string ID
     {
-        return JsonUtility.FromJson<SubscribeMessage<T>>(m);
+        get { return id; }
+        set { id = value; }
     }
 
-    public override void HandlerFunction(string m)
+    public override string Topic
     {
-        SubscribeMessage<T> d = ParseMessage(m);
-        Handler(d.msg);
+        get { return topic; }
+        set { topic = value; }
     }
-}
 
-public class RBSubscriber<T> where T : ExtendMessage, new()
-{
-    internal string topic;
-    public RBSubscriber(string t, Action<T> h)
+    public override string TypeName
     {
-        topic = t;
-        SubscribeManager<T> manager = new SubscribeManager<T>(t, h);
-        RBSocket.Instance.SetSubscriber(manager);
+        get { return typeName; }
+    }
+
+    public override bool IsRunning
+    {
+        get { return isRunning; }
+    }
+
+    public SubscribeDelegate<T> Handler
+    {
+        get { return handler; }
+        set { handler = value; }
+    }
+
+    private void SubscribeOperationMessageSend()
+    {
+        SubscribeOperationMessage subscribeOperationMessage = new SubscribeOperationMessage();
+        subscribeOperationMessage.topic = Topic;
+        subscribeOperationMessage.type = TypeName;
+        RBSocket.Instance.OperationSend(JsonUtility.ToJson(subscribeOperationMessage));
+    }
+
+    public SubscribeManager(string t, SubscribeDelegate<T> h, string id = "")
+    {
+        Topic = t; Handler = h; ID = id;
+        SubscribeOperationMessageSend();
+    }
+
+    private void HandlerFunctionTask(string messageJson)
+    {
+        isRunning = true;
+        Handler(JsonUtility.FromJson<SubscribeMessage<T>>(messageJson).msg);
+        isRunning = false;
+    }
+
+    public override void HandlerFunction(string messageJson)
+    {
+        Task.Run(() =>
+        {
+            HandlerFunctionTask(messageJson);
+        });
     }
 }
