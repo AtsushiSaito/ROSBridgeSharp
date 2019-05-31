@@ -6,26 +6,23 @@ using RBS.Messages;
 
 public class CubePosePublisher : MonoBehaviour
 {
-    private RBPublisher<RBS.Messages.geometry_msgs.Pose> pose_pub;
-    public GameObject cube;
-    // Start is called before the first frame update
+    private RBPublisher<RBS.Messages.geometry_msgs.Pose> pub;
+    public GameObject cubeObject;
+
     void Awake()
     {
-        pose_pub = new RBPublisher<RBS.Messages.geometry_msgs.Pose>("/pose");
+        pub = new RBPublisher<RBS.Messages.geometry_msgs.Pose>("/cube_pose");
     }
 
-    // Update is called once per frame
     void Update()
     {
-        Debug.Log(RBSocket.Instance.IsConnected);
         if (RBSocket.Instance.IsConnected)
         {
-
             RBS.Messages.geometry_msgs.Pose pose = new RBS.Messages.geometry_msgs.Pose();
-            pose.position.x = cube.transform.position.x;
-            pose.position.y = cube.transform.position.y;
-            pose.position.z = cube.transform.position.z;
-            pose_pub.publish(pose);
+            pose.position.x = cubeObject.transform.position.x;
+            pose.position.y = cubeObject.transform.position.y;
+            pose.position.z = cubeObject.transform.position.z;
+            pub.Publish(pose);
         }
     }
 }

@@ -6,14 +6,14 @@ using RBS.Messages;
 
 public class TestServiceServer : MonoBehaviour
 {
-    private RBServiceServer<RBS.Messages.std_srvs.SetBoolRequest, RBS.Messages.std_srvs.SetBoolResponse> service_server;
+    private RBServiceServer<RBS.Messages.std_srvs.SetBoolRequest, RBS.Messages.std_srvs.SetBoolResponse> serviceServer;
 
     void Awake()
     {
-        service_server = new RBServiceServer<RBS.Messages.std_srvs.SetBoolRequest, RBS.Messages.std_srvs.SetBoolResponse>("/test_service", service_handler);
+        serviceServer = new RBServiceServer<RBS.Messages.std_srvs.SetBoolRequest, RBS.Messages.std_srvs.SetBoolResponse>("/test_service", ServiceHandler);
     }
 
-    RBS.Messages.std_srvs.SetBoolResponse service_handler(RBS.Messages.std_srvs.SetBoolRequest request)
+    RBS.Messages.std_srvs.SetBoolResponse ServiceHandler(RBS.Messages.std_srvs.SetBoolRequest request)
     {
         Debug.Log("Get data is " + request.data);
         RBS.Messages.std_srvs.SetBoolResponse response = new RBS.Messages.std_srvs.SetBoolResponse();

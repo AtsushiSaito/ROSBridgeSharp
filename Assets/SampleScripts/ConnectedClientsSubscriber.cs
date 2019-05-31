@@ -6,14 +6,14 @@ using RBS.Messages;
 
 public class ConnectedClientsSubscriber : MonoBehaviour
 {
-    private RBSubscriber<RBS.Messages.rosbridge_msgs.ConnectedClients> client_sub;
+    private RBSubscriber<RBS.Messages.rosbridge_msgs.ConnectedClients> sub;
 
     void Awake()
     {
-        client_sub = new RBSubscriber<RBS.Messages.rosbridge_msgs.ConnectedClients>("/connected_clients", callback);
+        sub = new RBSubscriber<RBS.Messages.rosbridge_msgs.ConnectedClients>("/connected_clients", CallBack);
     }
 
-    void callback(RBS.Messages.rosbridge_msgs.ConnectedClients msg)
+    void CallBack(RBS.Messages.rosbridge_msgs.ConnectedClients msg)
     {
         Debug.Log("Clients -> " + msg.clients.Length);
     }

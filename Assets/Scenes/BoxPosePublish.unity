@@ -415,7 +415,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: f32636f4d258646c4a42afe75194425e, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  cube: {fileID: 1402791282}
+  cubeObject: {fileID: 1402791282}
 --- !u!114 &1818593964
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -429,7 +429,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   IPAddress: 10.211.55.9
-  Port: 9090
+  Port: 9000
   AutoConnect: 1
   ConnectWaitTime: 1
 --- !u!4 &1818593965
