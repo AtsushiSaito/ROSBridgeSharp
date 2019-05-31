@@ -55,14 +55,7 @@ namespace RBS
         {
             if (isUpdateRunning)
             {
-                if (!Application.isPlaying)
-                {
-                    Disconnect();
-                }
-                else
-                {
-                    Disconnect();
-                }
+                Disconnect();
             }
         }
 
