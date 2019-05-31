@@ -105,11 +105,11 @@ namespace RBS
                             if (msg.topic == sm.Topic)
                             {
                                 if (!sm.IsRunning)
-                            {
-                                sm.HandlerFunction(e.Data);
+                                {
+                                    sm.HandlerFunction(e.Data);
+                                }
                             }
                         }
-                    }
                     }
 
                     // サービスレスポンスの場合
