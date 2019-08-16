@@ -5,11 +5,11 @@ namespace RBS.Messages.visualization_msgs
     [System.Serializable]
     public class InteractiveMarkerUpdate : ExtendMessage
     {
-        public uint KEEP_ALIVE;
-        public uint UPDATE;
+        public byte KEEP_ALIVE;
+        public byte UPDATE;
         public string server_id;
         public uint seq_num;
-        public uint type;
+        public byte type;
         public RBS.Messages.visualization_msgs.InteractiveMarker[] markers;
         public RBS.Messages.visualization_msgs.InteractiveMarkerPose[] poses;
         public string[] erases;

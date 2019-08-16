@@ -8,7 +8,7 @@ args = sys.argv
 
 class CHClassGenerate():
     def __init__(self):
-        self.CSharpTypeName = ["bool", "string", "Time", "int", "uint", "int",
+        self.CSharpTypeName = ["bool", "string", "Time", "int", "byte", "int",
                                "uint", "int", "uint", "int", "uint", "float",
                                "double", "Duration", "byte", "char"]
 
@@ -185,6 +185,9 @@ class CHClassGenerate():
 
         # クラス定義のところまで
         for i in range(len(self.TypeList)):
+            if(self.TypeList[i] == "byte" and self.IsArray[i]):
+                self.TypeList[i] = "string"
+                self.IsArray[i] = False
             # ネームスペースが存在する場合
             if self.IsCustonNameSpace[i]:
                 text += self.GS(8) + "public " + "RBS.Messages."

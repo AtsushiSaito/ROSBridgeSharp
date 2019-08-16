@@ -5,19 +5,19 @@ namespace RBS.Messages.shape_msgs
     [System.Serializable]
     public class SolidPrimitive : ExtendMessage
     {
-        public uint BOX;
-        public uint SPHERE;
-        public uint CYLINDER;
-        public uint CONE;
-        public uint BOX_X;
-        public uint BOX_Y;
-        public uint BOX_Z;
-        public uint SPHERE_RADIUS;
-        public uint CYLINDER_HEIGHT;
-        public uint CYLINDER_RADIUS;
-        public uint CONE_HEIGHT;
-        public uint CONE_RADIUS;
-        public uint type;
+        public byte BOX;
+        public byte SPHERE;
+        public byte CYLINDER;
+        public byte CONE;
+        public byte BOX_X;
+        public byte BOX_Y;
+        public byte BOX_Z;
+        public byte SPHERE_RADIUS;
+        public byte CYLINDER_HEIGHT;
+        public byte CYLINDER_RADIUS;
+        public byte CONE_HEIGHT;
+        public byte CONE_RADIUS;
+        public byte type;
         public double[] dimensions;
         public override string Type() { return "shape_msgs/SolidPrimitive"; }
         public SolidPrimitive()

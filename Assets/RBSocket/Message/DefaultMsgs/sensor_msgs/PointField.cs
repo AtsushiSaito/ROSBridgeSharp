@@ -5,17 +5,17 @@ namespace RBS.Messages.sensor_msgs
     [System.Serializable]
     public class PointField : ExtendMessage
     {
-        public uint INT8;
-        public uint UINT8;
-        public uint INT16;
-        public uint UINT16;
-        public uint INT32;
-        public uint UINT32;
-        public uint FLOAT32;
-        public uint FLOAT64;
+        public byte INT8;
+        public byte UINT8;
+        public byte INT16;
+        public byte UINT16;
+        public byte INT32;
+        public byte UINT32;
+        public byte FLOAT32;
+        public byte FLOAT64;
         public string name;
         public uint offset;
-        public uint datatype;
+        public byte datatype;
         public uint count;
         public override string Type() { return "sensor_msgs/PointField"; }
         public PointField()

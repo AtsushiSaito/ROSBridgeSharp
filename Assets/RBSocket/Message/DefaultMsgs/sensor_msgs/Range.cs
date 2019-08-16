@@ -5,10 +5,10 @@ namespace RBS.Messages.sensor_msgs
     [System.Serializable]
     public class Range : ExtendMessage
     {
-        public uint ULTRASOUND;
-        public uint INFRARED;
+        public byte ULTRASOUND;
+        public byte INFRARED;
         public RBS.Messages.std_msgs.Header header;
-        public uint radiation_type;
+        public byte radiation_type;
         public float field_of_view;
         public float min_range;
         public float max_range;

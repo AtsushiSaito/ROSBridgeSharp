@@ -5,23 +5,23 @@ namespace RBS.Messages.visualization_msgs
     [System.Serializable]
     public class InteractiveMarkerControl : ExtendMessage
     {
-        public uint INHERIT;
-        public uint FIXED;
-        public uint VIEW_FACING;
-        public uint NONE;
-        public uint MENU;
-        public uint BUTTON;
-        public uint MOVE_AXIS;
-        public uint MOVE_PLANE;
-        public uint ROTATE_AXIS;
-        public uint MOVE_ROTATE;
-        public uint MOVE_3D;
-        public uint ROTATE_3D;
-        public uint MOVE_ROTATE_3D;
+        public byte INHERIT;
+        public byte FIXED;
+        public byte VIEW_FACING;
+        public byte NONE;
+        public byte MENU;
+        public byte BUTTON;
+        public byte MOVE_AXIS;
+        public byte MOVE_PLANE;
+        public byte ROTATE_AXIS;
+        public byte MOVE_ROTATE;
+        public byte MOVE_3D;
+        public byte ROTATE_3D;
+        public byte MOVE_ROTATE_3D;
         public string name;
         public RBS.Messages.geometry_msgs.Quaternion orientation;
-        public uint orientation_mode;
-        public uint interaction_mode;
+        public byte orientation_mode;
+        public byte interaction_mode;
         public bool always_visible;
         public RBS.Messages.visualization_msgs.Marker[] markers;
         public bool independent_marker_orientation;

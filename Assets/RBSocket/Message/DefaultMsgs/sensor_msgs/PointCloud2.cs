@@ -12,7 +12,7 @@ namespace RBS.Messages.sensor_msgs
         public bool is_bigendian;
         public uint point_step;
         public uint row_step;
-        public uint[] data;
+        public string data;
         public bool is_dense;
         public override string Type() { return "sensor_msgs/PointCloud2"; }
         public PointCloud2()
@@ -24,7 +24,7 @@ namespace RBS.Messages.sensor_msgs
             is_bigendian = false;
             point_step = 0;
             row_step = 0;
-            data = new uint[0];
+            data = "";
             is_dense = false;
         }
     }

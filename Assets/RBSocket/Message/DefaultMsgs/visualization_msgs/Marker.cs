@@ -5,22 +5,22 @@ namespace RBS.Messages.visualization_msgs
     [System.Serializable]
     public class Marker : ExtendMessage
     {
-        public uint ARROW;
-        public uint CUBE;
-        public uint SPHERE;
-        public uint CYLINDER;
-        public uint LINE_STRIP;
-        public uint LINE_LIST;
-        public uint CUBE_LIST;
-        public uint SPHERE_LIST;
-        public uint POINTS;
-        public uint TEXT_VIEW_FACING;
-        public uint MESH_RESOURCE;
-        public uint TRIANGLE_LIST;
-        public uint ADD;
-        public uint MODIFY;
-        public uint DELETE;
-        public uint DELETEALL;
+        public byte ARROW;
+        public byte CUBE;
+        public byte SPHERE;
+        public byte CYLINDER;
+        public byte LINE_STRIP;
+        public byte LINE_LIST;
+        public byte CUBE_LIST;
+        public byte SPHERE_LIST;
+        public byte POINTS;
+        public byte TEXT_VIEW_FACING;
+        public byte MESH_RESOURCE;
+        public byte TRIANGLE_LIST;
+        public byte ADD;
+        public byte MODIFY;
+        public byte DELETE;
+        public byte DELETEALL;
         public RBS.Messages.std_msgs.Header header;
         public string ns;
         public int id;

@@ -9,9 +9,9 @@ namespace RBS.Messages.sensor_msgs
         public uint height;
         public uint width;
         public string encoding;
-        public uint is_bigendian;
+        public byte is_bigendian;
         public uint step;
-        public uint[] data;
+        public string data;
         public override string Type() { return "sensor_msgs/Image"; }
         public Image()
         {
@@ -21,7 +21,7 @@ namespace RBS.Messages.sensor_msgs
             encoding = "";
             is_bigendian = 0;
             step = 0;
-            data = new uint[0];
+            data = "";
         }
     }
 }

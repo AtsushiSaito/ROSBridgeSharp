@@ -5,14 +5,14 @@ namespace RBS.Messages.tf2_msgs
     [System.Serializable]
     public class TF2Error : ExtendMessage
     {
-        public uint NO_ERROR;
-        public uint LOOKUP_ERROR;
-        public uint CONNECTIVITY_ERROR;
-        public uint EXTRAPOLATION_ERROR;
-        public uint INVALID_ARGUMENT_ERROR;
-        public uint TIMEOUT_ERROR;
-        public uint TRANSFORM_ERROR;
-        public uint error;
+        public byte NO_ERROR;
+        public byte LOOKUP_ERROR;
+        public byte CONNECTIVITY_ERROR;
+        public byte EXTRAPOLATION_ERROR;
+        public byte INVALID_ARGUMENT_ERROR;
+        public byte TIMEOUT_ERROR;
+        public byte TRANSFORM_ERROR;
+        public byte error;
         public string error_string;
         public override string Type() { return "tf2_msgs/TF2Error"; }
         public TF2Error()

@@ -5,18 +5,18 @@ namespace RBS.Messages.actionlib_msgs
     [System.Serializable]
     public class GoalStatus : ExtendMessage
     {
-        public uint PENDING;
-        public uint ACTIVE;
-        public uint PREEMPTED;
-        public uint SUCCEEDED;
-        public uint ABORTED;
-        public uint REJECTED;
-        public uint PREEMPTING;
-        public uint RECALLING;
-        public uint RECALLED;
-        public uint LOST;
+        public byte PENDING;
+        public byte ACTIVE;
+        public byte PREEMPTED;
+        public byte SUCCEEDED;
+        public byte ABORTED;
+        public byte REJECTED;
+        public byte PREEMPTING;
+        public byte RECALLING;
+        public byte RECALLED;
+        public byte LOST;
         public RBS.Messages.actionlib_msgs.GoalID goal_id;
-        public uint status;
+        public byte status;
         public string text;
         public override string Type() { return "actionlib_msgs/GoalStatus"; }
         public GoalStatus()

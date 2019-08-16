@@ -7,13 +7,13 @@ namespace RBS.Messages.sensor_msgs
     {
         public RBS.Messages.std_msgs.Header header;
         public string format;
-        public uint[] data;
+        public string data;
         public override string Type() { return "sensor_msgs/CompressedImage"; }
         public CompressedImage()
         {
             header = new RBS.Messages.std_msgs.Header();
             format = "";
-            data = new uint[0];
+            data = "";
         }
     }
 }

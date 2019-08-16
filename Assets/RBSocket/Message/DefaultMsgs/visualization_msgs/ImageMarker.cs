@@ -5,13 +5,13 @@ namespace RBS.Messages.visualization_msgs
     [System.Serializable]
     public class ImageMarker : ExtendMessage
     {
-        public uint CIRCLE;
-        public uint LINE_STRIP;
-        public uint LINE_LIST;
-        public uint POLYGON;
-        public uint POINTS;
-        public uint ADD;
-        public uint REMOVE;
+        public byte CIRCLE;
+        public byte LINE_STRIP;
+        public byte LINE_LIST;
+        public byte POLYGON;
+        public byte POINTS;
+        public byte ADD;
+        public byte REMOVE;
         public RBS.Messages.std_msgs.Header header;
         public string ns;
         public int id;
@@ -20,7 +20,7 @@ namespace RBS.Messages.visualization_msgs
         public RBS.Messages.geometry_msgs.Point position;
         public float scale;
         public RBS.Messages.std_msgs.ColorRGBA outline_color;
-        public uint filled;
+        public byte filled;
         public RBS.Messages.std_msgs.ColorRGBA fill_color;
         public Duration lifetime;
         public RBS.Messages.geometry_msgs.Point[] points;

@@ -5,11 +5,11 @@ namespace RBS.Messages.sensor_msgs
     [System.Serializable]
     public class JoyFeedback : ExtendMessage
     {
-        public uint TYPE_LED;
-        public uint TYPE_RUMBLE;
-        public uint TYPE_BUZZER;
-        public uint type;
-        public uint id;
+        public byte TYPE_LED;
+        public byte TYPE_RUMBLE;
+        public byte TYPE_BUZZER;
+        public byte type;
+        public byte id;
         public float intensity;
         public override string Type() { return "sensor_msgs/JoyFeedback"; }
         public JoyFeedback()

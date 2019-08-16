@@ -5,17 +5,17 @@ namespace RBS.Messages.sensor_msgs
     [System.Serializable]
     public class NavSatFix : ExtendMessage
     {
-        public uint COVARIANCE_TYPE_UNKNOWN;
-        public uint COVARIANCE_TYPE_APPROXIMATED;
-        public uint COVARIANCE_TYPE_DIAGONAL_KNOWN;
-        public uint COVARIANCE_TYPE_KNOWN;
+        public byte COVARIANCE_TYPE_UNKNOWN;
+        public byte COVARIANCE_TYPE_APPROXIMATED;
+        public byte COVARIANCE_TYPE_DIAGONAL_KNOWN;
+        public byte COVARIANCE_TYPE_KNOWN;
         public RBS.Messages.std_msgs.Header header;
         public RBS.Messages.sensor_msgs.NavSatStatus status;
         public double latitude;
         public double longitude;
         public double altitude;
         public double[] position_covariance;
-        public uint position_covariance_type;
+        public byte position_covariance_type;
         public override string Type() { return "sensor_msgs/NavSatFix"; }
         public NavSatFix()
         {

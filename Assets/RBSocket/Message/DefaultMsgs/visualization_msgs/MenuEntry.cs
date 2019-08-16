@@ -5,14 +5,14 @@ namespace RBS.Messages.visualization_msgs
     [System.Serializable]
     public class MenuEntry : ExtendMessage
     {
-        public uint FEEDBACK;
-        public uint ROSRUN;
-        public uint ROSLAUNCH;
+        public byte FEEDBACK;
+        public byte ROSRUN;
+        public byte ROSLAUNCH;
         public uint id;
         public uint parent_id;
         public string title;
         public string command;
-        public uint command_type;
+        public byte command_type;
         public override string Type() { return "visualization_msgs/MenuEntry"; }
         public MenuEntry()
         {

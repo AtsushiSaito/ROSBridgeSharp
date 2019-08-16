@@ -6,7 +6,7 @@ namespace RBS.Messages.theora_image_transport
     public class Packet : ExtendMessage
     {
         public RBS.Messages.std_msgs.Header header;
-        public uint[] data;
+        public string data;
         public int b_o_s;
         public int e_o_s;
         public int granulepos;
@@ -15,7 +15,7 @@ namespace RBS.Messages.theora_image_transport
         public Packet()
         {
             header = new RBS.Messages.std_msgs.Header();
-            data = new uint[0];
+            data = "";
             b_o_s = 0;
             e_o_s = 0;
             granulepos = 0;

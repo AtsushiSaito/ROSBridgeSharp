@@ -6,12 +6,12 @@ namespace RBS.Messages.std_msgs
     public class ByteMultiArray : ExtendMessage
     {
         public RBS.Messages.std_msgs.MultiArrayLayout layout;
-        public byte[] data;
+        public string data;
         public override string Type() { return "std_msgs/ByteMultiArray"; }
         public ByteMultiArray()
         {
             layout = new RBS.Messages.std_msgs.MultiArrayLayout();
-            data = new byte[0];
+            data = "";
         }
     }
 }
