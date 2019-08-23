@@ -287,5 +287,10 @@ namespace RBS
                 ws.Send(JsonUtility.ToJson(ua));
             }
         }
+
+        public ref List<SubscribeManager> GetSubscribeManagers()
+        {
+            return ref subscribeManagers;
+        }
     }
 }

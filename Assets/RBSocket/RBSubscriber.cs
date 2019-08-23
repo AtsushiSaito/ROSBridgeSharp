@@ -32,6 +32,7 @@ public abstract class SubscribeManager
     public abstract string TypeName { get; }
     public abstract bool IsRunning { get; }
     public abstract void HandlerFunction(string messageJson);
+    public abstract string GetViewJson();
 }
 
 public class SubscribeManager<T> : SubscribeManager where T : ExtendMessage, new()
@@ -42,6 +43,7 @@ public class SubscribeManager<T> : SubscribeManager where T : ExtendMessage, new
     private bool isRunning;
     private string typeName = new MessagesInstance<T>().TypeName;
     private SubscribeDelegate<T> handler;
+    private T messageData;
 
     public override string ID
     {
@@ -88,7 +90,8 @@ public class SubscribeManager<T> : SubscribeManager where T : ExtendMessage, new
     private void HandlerFunctionTask(string messageJson)
     {
         isRunning = true;
-        Handler(JsonUtility.FromJson<SubscribeMessage<T>>(messageJson).msg);
+        messageData = JsonUtility.FromJson<SubscribeMessage<T>>(messageJson).msg;
+        Handler(messageData);
         isRunning = false;
     }
 
@@ -98,5 +101,12 @@ public class SubscribeManager<T> : SubscribeManager where T : ExtendMessage, new
         {
             HandlerFunctionTask(messageJson);
         });
+    }
+
+    public override string GetViewJson()
+    {
+        if (messageData != null)
+            return messageData.ConvertString();
+        return "";
     }
 }
